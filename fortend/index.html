@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f5f8f4">
+    <meta name="description" content="ClimateGuard AI climate and micro-location dashboard preview.">
+    <title>ClimateGuard AI | Climate dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="#" aria-label="ClimateGuard AI home">
+            <span class="brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 32 32" fill="none">
+                    <path d="M25.8 6.2C16 6.4 8.6 9.5 7.3 17.1c-.6 3.4 1.8 6.4 5.2 6.4 7.5 0 10.9-8.6 13.3-17.3Z" fill="currentColor"/>
+                    <path d="M5.5 26.5c3.4-6.2 8.1-9.9 14.3-12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </span>
+            <span class="brand-copy">
+                <strong>ClimateAnalyzer <span>AI</span></strong>
+                <small>Climate intelligence for every field</small>
+            </span>
+        </a>
+        <div class="topbar-actions">
+            <span class="preview-pill"><span></span> Dashboard preview</span>
+            <button class="connection-button" id="connectionButton" type="button" onclick="connectBackend()">
+                <span class="connection-dot" id="connectionDot"></span>
+                <span id="connectionLabel">Check backend</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="page-shell">
+        <section class="welcome-row">
+            <div>
+                <p class="eyebrow">YOUR CLIMATE FIELD DESK</p>
+                <h1>Plan for a changing climate.</h1>
+                <p class="welcome-copy">Bring local conditions and practical farming decisions into one clear view.</p>
+            </div>
+            <div class="date-chip" aria-label="Dashboard date">
+                <span class="date-icon" aria-hidden="true">◷</span>
+                <span>Planning workspace</span>
+            </div>
+        </section>
+
+        <section class="dashboard-section location-section" aria-labelledby="location-section-title">
+            <div class="section-heading dashboard-section-heading">
+                <div>
+                    <p class="eyebrow">SECTION 1</p>
+                    <h2 id="location-section-title">Location input</h2>
+                </div>
+            </div>
+            <div class="search-panel" aria-labelledby="location-search-title">
+            <div class="search-intro">
+                <span class="search-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M20 10.2c0 5.1-8 11-8 11s-8-5.9-8-11a8 8 0 1 1 16 0Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.7" stroke="currentColor" stroke-width="1.7"/></svg>
+                </span>
+                <div>
+                    <h3 id="location-search-title">Choose your village, town, district or city</h3>
+                    <p>Search a village, district or city to set your field location.</p>
+                </div>
+            </div>
+            <form class="location-search" id="locationSearchForm">
+                <label class="sr-only" for="locationSearch">Village, district or city</label>
+                <input id="locationSearch" name="locationSearch" type="search" placeholder="e.g. Nashik, Maharashtra" autocomplete="off">
+                <button class="button button-primary" id="locationSearchButton" type="submit">
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="8.7" cy="8.7" r="5.7" stroke="currentColor" stroke-width="1.7"/><path d="m13 13 4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    Set location
+                </button>
+            </form>
+            <label class="sr-only" for="locationCandidates">Choose a matching location</label>
+            <select class="location-candidates" id="locationCandidates" aria-label="Choose a matching location" hidden></select>
+            <p class="form-feedback" id="locationFeedback" aria-live="polite"></p>
+            </div>
+            <div class="selected-location-summary" aria-live="polite">
+                <strong id="selectedLocationSummary">No location selected</strong>
+                <span id="selectedLocationCoordinates">Latitude — · Longitude —</span>
+            </div>
+            <article class="card snapshot-card" aria-labelledby="weatherSnapshotTitle">
+                <div class="card-heading snapshot-heading">
+                    <div>
+                        <h3 id="weatherSnapshotTitle">Current weather</h3>
+                    </div>
+                </div>
+                <p class="sample-disclaimer" id="weatherSummaryStatus" aria-live="polite">Search for a location to load its weather.</p>
+                <div class="metric-grid weather-grid">
+                    <article class="metric-tile">
+                        <div class="metric-top">
+                            <span class="metric-icon sun-icon" aria-hidden="true">☼</span>
+                            <span class="metric-name">Temperature</span>
+                        </div>
+                        <strong><span id="currentTemperature">—</span><span class="unit"> °C</span></strong>
+                        <span class="metric-caption" id="currentWeatherDescription">Current conditions</span>
+                    </article>
+                    <article class="metric-tile">
+                        <div class="metric-top">
+                            <span class="metric-icon humidity-icon" aria-hidden="true">%</span>
+                            <span class="metric-name">Relative humidity</span>
+                        </div>
+                        <strong><span id="currentHumidity">—</span><span class="unit">%</span></strong>
+                        <span class="metric-caption">Current conditions</span>
+                    </article>
+                    <article class="metric-tile">
+                        <div class="metric-top">
+                            <span class="metric-icon rain-icon" aria-hidden="true">☂</span>
+                            <span class="metric-name">Precipitation</span>
+                        </div>
+                        <strong><span id="currentPrecipitation">—</span><span class="unit"> mm</span></strong>
+                        <span class="metric-caption">Current conditions</span>
+                    </article>
+                </div>
+            </article>
+        </section>
+
+        <section class="dashboard-section" aria-labelledby="farm-details-title">
+            <div class="section-heading dashboard-section-heading">
+                <div>
+                    <p class="eyebrow">SECTION 2</p>
+                    <h2 id="farm-details-title">Crop and soil details</h2>
+                </div>
+                <span class="section-note">Choose your farm information</span>
+            </div>
+        <section class="content-grid profile-grid">
+            <article class="card farmer-card">
+                <div class="card-heading">
+                    <div class="heading-icon green-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M4 20c0-5.5 3.3-9.5 8-11 0 5.3-2.4 9-8 11Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 20c.4-5.7 3.7-9.6 10-11-.2 6.6-3.5 10.6-10 11Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div>
+                        <h3>Farm details</h3>
+                        <p>Enter the crop, soil and soil moisture</p>
+                    </div>
+                </div>
+                <form id="farmForm" class="farm-form">
+                    <div class="field-group field-full">
+                        <label for="farmLocation">Location</label>
+                        <input id="farmLocation" name="location" type="text" placeholder="Choose a location in Section 1" readonly>
+                    </div>
+                    <div class="field-group">
+                        <label for="cropType">Crop type</label>
+                        <select id="cropType" name="cropType" required>
+                            <option value="">Select a crop</option>
+                            <option>Rice</option>
+                            <option>Wheat</option>
+                            <option>Maize</option>
+                            <option>Cotton</option>
+                            <option>Groundnut</option>
+                            <option>Sugarcane</option>
+                            <option>Tomato</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label for="soilType">Soil type</label>
+                        <select id="soilType" name="soilType" required>
+                            <option value="">Select soil type</option>
+                            <option>Sandy</option>
+                            <option>Clay</option>
+                            <option>Loamy</option>
+                            <option>Silty</option>
+                            <option>Black soil</option>
+                            <option>Red soil</option>
+                        </select>
+                    </div>
+                    <div class="field-group field-full moisture-field">
+                        <div class="range-label-row">
+                            <label for="soilMoisture">Soil moisture (%)</label>
+                        </div>
+                        <input id="soilMoisture" name="soilMoisture" type="number" min="0" max="100" step="any" placeholder="Enter 0–100" required>
+                        <small class="field-hint">User-entered normalized 0–100 moisture estimate; soil type adjusts its retention meaning. Not an API measurement.</small>
+                    </div>
+                    <div class="field-full">
+                        <button class="button button-primary save-button" type="submit">Analyze climate risk</button>
+                    </div>
+                    <p class="form-feedback field-full" id="farmFeedback" aria-live="polite"></p>
+                </form>
+            </article>
+
+        </section>
+        </section>
+
+        <section class="dashboard-section" aria-labelledby="risk-section-title">
+            <div class="section-heading dashboard-section-heading">
+                <div>
+                    <p class="eyebrow">SECTION 3</p>
+                    <h2 id="risk-section-title">Climate risk analysis</h2>
+                </div>
+            </div>
+            <article class="card climate-report-card" aria-labelledby="climateReportTitle">
+                <div class="climate-report-heading">
+                    <h3 id="climateReportTitle">Climate report</h3>
+                    <div class="field-group">
+                        <label id="reportLanguageLabel" for="reportLanguage">Report language</label>
+                        <select id="reportLanguage">
+                            <option value="en" selected>English</option>
+                            <option value="te">తెలుగు</option>
+                            <option value="hi">हिन्दी</option>
+                            <option value="kn">ಕನ್ನಡ</option>
+                        </select>
+                    </div>
+                </div>
+                <p id="climateReportText" aria-live="polite">Run climate risk analysis to prepare a climate report.</p>
+                <div class="location-search climate-report-controls">
+                    <button class="button button-primary" id="playReport" type="button" disabled>Play report</button>
+                    <button class="button" id="pauseReport" type="button" disabled>Pause / Resume</button>
+                    <button class="button" id="stopReport" type="button" disabled>Stop</button>
+                </div>
+                <p class="form-feedback" id="reportVoiceStatus" aria-live="polite"></p>
+            </article>
+            <details class="risk-details">
+                <summary>View calculated climate-risk details</summary>
+                <section class="risk-section" aria-labelledby="risk-title">
+                    <div class="section-heading compact-heading">
+                        <div>
+                            <p class="eyebrow">7-DAY PROTOTYPE ESTIMATES</p>
+                            <h3 id="risk-title">Climate-risk indicators</h3>
+                        </div>
+                        <span class="sample-tag">Prototype only</span>
+                    </div>
+                    <p class="sample-disclaimer">These estimates use the selected location's 7-day forecast and your soil-moisture entry. They are not validated crop predictions.</p>
+                    <details class="risk-method">
+                        <summary>Show factor tables and scoring rules</summary>
+                        <p><strong>Crop parameters (p / Kc mid):</strong> Rice 0.20 / 1.20; Wheat 0.55 / 1.15; Maize 0.55 / 1.20; Cotton 0.65 / 1.175 (midpoint of FAO's 1.15–1.20 range); Groundnut 0.50 / 1.15; Sugarcane 0.65 / 1.25; Tomato 0.40 / 1.15. FAO-56 p is allowable depletion before stress (ETc about 5 mm/day); its rice value is reported relative to saturation and is used here only as a prototype threshold. Kc mid is the crop water-use coefficient. The heat proxy uses Kc mid / 1.15; it scales heat-driven water demand and is not a crop heat-injury threshold.</p>
+                        <p><strong>Soil parameters (relative retention ratio / p adjustment / drainage factor):</strong> Sandy 0.60 / +0.10 / 0.90; Clay 0.80 / −0.10 / 0.30; Loamy 1.00 / 0 / 0.70; Silty 1.13 / −0.05 / 0.50; Black soil 0.80 / −0.10 / 0.25; Red soil 0.60 / +0.05 / 0.80. Retention ratios are normalized representative available-water-capacity proxies (reference 150 mm/m; FAO-56 Example 36 gives 90 mm/m for loamy sand, 120 for silty clay and 170 for silt). p adjustments use FAO's coarse +5–10% / fine −5–10% guidance. Drainage factor is a normalized 0–1 class estimate (0 = very slow, 1 = rapid), not measured hydraulic conductivity; Black and Red soil use the proxies described above.</p>
+                        <p><strong>Drought:</strong> effective depletion = clamp((1 − moisture% / 100) / retention ratio, 0, 1); adjusted p = clamp(crop p + soil p adjustment, 0.10, 0.80); moisture stress = clamp((effective depletion − adjusted p) / (1 − adjusted p) × 100, 0, 100). Rain deficit = clamp((20 − actual 7-day rain mm) / 20 × 100, 0, 100). Heat stress = clamp((actual mean daily forecast high °C − 30) / 10 × 100, 0, 100). Drought score = 40% moisture stress + 30% (rain deficit × Kc mid / 1.15) + 30% (heat stress × Kc mid / 1.15); component scores are capped at 100.</p>
+                        <p><strong>Heavy rainfall:</strong> intensity = clamp((actual maximum daily forecast rain mm − 20) / 30 × 100, 0, 100), so 20 mm/day starts the scale and 50 mm/day reaches 100. Saturation = clamp((entered moisture% − 60) / 40 × 100, 0, 100). Drainage risk = (1 − drainage factor) × intensity. Score = 70% intensity + 15% saturation + 15% drainage risk. Moisture is a user-entered normalized estimate, not an API or sensor measurement. See <a href="https://www.fao.org/4/x0490e/x0490e0e.htm" target="_blank" rel="noopener noreferrer">FAO-56 water-stress guidance</a> and <a href="https://www.fao.org/4/x0490e/x0490e0b.htm" target="_blank" rel="noopener noreferrer">FAO-56 crop coefficients</a>.</p>
+                    </details>
+                    <div class="metric-grid risk-grid">
+                        <article class="card risk-card">
+                            <div class="risk-title-row"><span class="risk-icon drought-icon" aria-hidden="true">⌁</span><h3>Drought risk</h3></div>
+                            <div class="risk-value-row"><strong id="droughtScore">—</strong><span class="risk-badge" id="droughtCategory">Not analysed</span></div>
+                            <div class="risk-track"><span id="droughtBar"></span></div>
+                            <p id="droughtFactors">Run an analysis to see forecast and soil-moisture factors.</p>
+                        </article>
+                        <article class="card risk-card">
+                            <div class="risk-title-row"><span class="risk-icon rainfall-icon" aria-hidden="true">☂</span><h3>Heavy-rainfall risk</h3></div>
+                            <div class="risk-value-row"><strong id="rainfallScore">—</strong><span class="risk-badge" id="rainfallCategory">Not analysed</span></div>
+                            <div class="risk-track"><span id="rainfallBar"></span></div>
+                            <p id="rainfallFactors">Run an analysis to see forecast intensity and soil saturation factors.</p>
+                        </article>
+                        <article class="card risk-card overall-risk-card">
+                            <div class="risk-title-row"><span class="risk-icon stress-icon" aria-hidden="true">✳</span><h3>Overall climate risk</h3></div>
+                            <div class="risk-value-row"><strong id="overallCategory">—</strong><span class="risk-badge badge-blue">Prototype</span></div>
+                            <p id="farmSummary">Selected crop, soil and soil moisture will be shown after analysis.</p>
+                            <p id="cropInfluence">Crop-specific water and heat-demand factors will be explained after analysis.</p>
+                            <p id="soilInfluence">Soil retention and drainage factors will be explained after analysis.</p>
+                            <p id="weatherInfluence" aria-live="polite">Weather factors use only the selected location's loaded forecast.</p>
+                            <p id="overallFactors">Overall risk is the higher of the drought and heavy-rainfall scores.</p>
+                        </article>
+                    </div>
+                    <p class="form-feedback risk-feedback" id="riskFeedback" aria-live="polite"></p>
+                </section>
+            </details>
+        </section>
+
+        <section class="dashboard-section" aria-labelledby="map-title">
+            <div class="card map-card">
+                <div class="map-header">
+                    <div class="card-heading">
+                        <div class="heading-icon blue-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.7"/></svg>
+                        </div>
+                        <div><p class="eyebrow">SECTION 4</p><h2 id="map-title">Farm location map</h2></div>
+                    </div>
+                    <span class="coming-soon-pill">Drag the pin to refine location</span>
+                </div>
+                <div id="farmMap" class="farm-map" aria-label="Interactive farm location map"></div>
+                <div class="farm-map-controls">
+                    <div class="farm-map-location" aria-live="polite">
+                        <strong id="farmMapLocation">No farm location selected</strong>
+                        <span id="farmMapCoordinates">Latitude — · Longitude —</span>
+                        <p id="farmMapFeedback" role="status">Search for a location to place the farm marker.</p>
+                        <p id="confirmedFarmLocation" class="confirmed-farm-location" hidden></p>
+                    </div>
+                    <button id="confirmFarmLocation" class="button button-primary confirm-location-button" type="button" disabled>Confirm Farm Location</button>
+                </div>
+                <p class="map-attribution-note">Map tiles © OpenStreetMap contributors. Follow the <a href="https://operations.osmfoundation.org/policies/tiles/" target="_blank" rel="noopener noreferrer">tile usage policy</a>; bulk downloading is not permitted.</p>
+            </div>
+        </section>
+
+        <footer class="page-footer">
+            <span>ClimateGuard AI <span class="footer-separator">•</span> Predictive Climate &amp; Micro-Location Yield Engine</span>
+            <span>Preview mode <span class="footer-dot"></span></span>
+        </footer>
+    </main>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
