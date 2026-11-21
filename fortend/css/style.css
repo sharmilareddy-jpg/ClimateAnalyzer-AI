@@ -181,6 +181,113 @@ button {
     font-size: 11px;
 }
 
+.forecast-card {
+    margin-top: 12px;
+    padding: 17px;
+}
+
+.forecast-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(92px, 1fr));
+    gap: 8px;
+    overflow-x: auto;
+}
+
+.forecast-day {
+    min-width: 92px;
+    padding: 10px 8px;
+    border: 1px solid #e8ecef;
+    border-radius: 9px;
+    background: #fafbfc;
+    text-align: center;
+}
+
+.forecast-day strong,
+.forecast-day span {
+    display: block;
+}
+
+.forecast-day strong {
+    margin-bottom: 5px;
+    font-size: 11px;
+}
+
+.forecast-day span {
+    color: #66766d;
+    font-size: 10px;
+}
+
+.suitability-card {
+    padding: 18px;
+}
+
+.suitability-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.suitability-heading p {
+    margin: 0;
+}
+
+.suitability-badge {
+    flex: 0 0 auto;
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: #edf1f3;
+    color: #61707a;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.suitability-badge.suitable {
+    background: #dcecdf;
+    color: #3f7350;
+}
+
+.suitability-badge.moderately-suitable {
+    background: #f3e3be;
+    color: #80672f;
+}
+
+.suitability-badge.not-suitable {
+    background: #f1d8d5;
+    color: #98564d;
+}
+
+.suitability-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.suitability-grid > div {
+    min-height: 120px;
+    padding: 13px;
+    border: 1px solid #e8ecef;
+    border-radius: 10px;
+    background: #fafbfc;
+}
+
+.suitability-grid h3 {
+    margin-bottom: 7px;
+    font-size: 12px;
+}
+
+.suitability-grid p,
+.suitability-grid li {
+    color: #66766d;
+    font-size: 11px;
+    line-height: 1.55;
+}
+
+.suitability-grid ul {
+    margin: 0;
+    padding-left: 17px;
+}
+
 .welcome-row {
     display: flex;
     align-items: flex-end;
@@ -1089,19 +1196,6 @@ h1 {
     color: #657079;
 }
 
-.confirmed-farm-location {
-    font-weight: 700;
-}
-
-.confirm-location-button {
-    flex-shrink: 0;
-    min-height: 40px;
-}
-
-.confirm-location-button:disabled {
-    cursor: not-allowed;
-    opacity: 0.55;
-}
 
 .map-attribution-note {
     margin-top: 11px;
@@ -1182,6 +1276,10 @@ h1 {
 
     .weather-grid {
         gap: 9px;
+    }
+
+    .suitability-grid {
+        grid-template-columns: 1fr;
     }
 
     .metric-tile {
@@ -1326,10 +1424,6 @@ h1 {
     .farm-map-controls {
         align-items: stretch;
         flex-direction: column;
-    }
-
-    .confirm-location-button {
-        width: 100%;
     }
 
     .page-footer {

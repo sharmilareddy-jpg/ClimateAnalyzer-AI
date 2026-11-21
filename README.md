@@ -104,12 +104,15 @@ http://localhost:3000
 | GET | `/api/geocode?name=location` | Retrieves geographical coordinates |
 | GET | `/api/weather?latitude=...&longitude=...` | Retrieves weather information |
 
+Report playback uses browser-installed speech voices only. English, Telugu, Hindi, and Kannada reports remain available as translated text; when a matching Telugu or Kannada voice is not installed on the device, the report displays a message and does not fall back to an English voice.
+
 ## 🌍 External API
 
 This project uses the **Open-Meteo API** to retrieve geographical and weather information.
 
 - Geocoding API
 - Weather Forecast API
+
 
 Website: https://open-meteo.com/
 

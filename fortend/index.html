@@ -76,7 +76,6 @@
             </div>
             <div class="selected-location-summary" aria-live="polite">
                 <strong id="selectedLocationSummary">No location selected</strong>
-                <span id="selectedLocationCoordinates">Latitude — · Longitude —</span>
             </div>
             <article class="card snapshot-card" aria-labelledby="weatherSnapshotTitle">
                 <div class="card-heading snapshot-heading">
@@ -111,6 +110,15 @@
                         <span class="metric-caption">Current conditions</span>
                     </article>
                 </div>
+            </article>
+            <article class="card forecast-card" aria-labelledby="forecastTitle">
+                <div class="card-heading">
+                    <div>
+                        <h3 id="forecastTitle">Seven-day forecast</h3>
+                    </div>
+                </div>
+                <p class="sample-disclaimer" id="forecastStatus">Search for a location to load the forecast.</p>
+                <div class="forecast-grid" id="weatherForecast"></div>
             </article>
         </section>
 
@@ -171,13 +179,47 @@
                         <small class="field-hint">User-entered normalized 0–100 moisture estimate; soil type adjusts its retention meaning. Not an API measurement.</small>
                     </div>
                     <div class="field-full">
-                        <button class="button button-primary save-button" type="submit">Analyze climate risk</button>
+                        <button class="button button-primary save-button" id="analyzeClimateButton" type="submit">Analyze climate risk</button>
                     </div>
                     <p class="form-feedback field-full" id="farmFeedback" aria-live="polite"></p>
                 </form>
             </article>
 
         </section>
+        </section>
+
+        <section class="dashboard-section" aria-labelledby="crop-suitability-title">
+            <div class="section-heading dashboard-section-heading">
+                <div>
+                    <p class="eyebrow">SECTION 3</p>
+                    <h2 id="crop-suitability-title">Crop and soil suitability</h2>
+                </div>
+            </div>
+            <article class="card suitability-card">
+                <div class="suitability-heading">
+                    <span class="suitability-badge" id="suitabilityCategory">Awaiting analysis</span>
+                    <p id="suitabilitySummary">Select a crop, soil and moisture, then run the climate analysis.</p>
+                </div>
+                <div class="suitability-grid">
+                    <div>
+                        <h3>Soil suitability</h3>
+                        <p id="soilSuitabilityText">Not analysed.</p>
+                    </div>
+                    <div>
+                        <h3>Moisture suitability</h3>
+                        <p id="moistureSuitabilityText">Not analysed.</p>
+                    </div>
+                    <div>
+                        <h3>Weather suitability</h3>
+                        <p id="weatherSuitabilityText">Not analysed.</p>
+                    </div>
+                    <div>
+                        <h3>Farmer recommendations</h3>
+                        <ul id="suitabilityRecommendations"><li>Run the analysis to receive conditional recommendations.</li></ul>
+                    </div>
+                </div>
+                <p class="sample-disclaimer" id="suitabilityDisclaimer">Advisory estimates only. Approximate rules do not replace soil testing or professional agricultural advice.</p>
+            </article>
         </section>
 
         <section class="dashboard-section" aria-labelledby="risk-section-title">
@@ -229,13 +271,13 @@
                     <div class="metric-grid risk-grid">
                         <article class="card risk-card">
                             <div class="risk-title-row"><span class="risk-icon drought-icon" aria-hidden="true">⌁</span><h3>Drought risk</h3></div>
-                            <div class="risk-value-row"><strong id="droughtScore">—</strong><span class="risk-badge" id="droughtCategory">Not analysed</span></div>
+                            <div class="risk-value-row"><strong id="droughtScore">—</strong><span class="risk-badge" id="droughtCategory">Awaiting analysis</span></div>
                             <div class="risk-track"><span id="droughtBar"></span></div>
                             <p id="droughtFactors">Run an analysis to see forecast and soil-moisture factors.</p>
                         </article>
                         <article class="card risk-card">
                             <div class="risk-title-row"><span class="risk-icon rainfall-icon" aria-hidden="true">☂</span><h3>Heavy-rainfall risk</h3></div>
-                            <div class="risk-value-row"><strong id="rainfallScore">—</strong><span class="risk-badge" id="rainfallCategory">Not analysed</span></div>
+                            <div class="risk-value-row"><strong id="rainfallScore">—</strong><span class="risk-badge" id="rainfallCategory">Awaiting analysis</span></div>
                             <div class="risk-track"><span id="rainfallBar"></span></div>
                             <p id="rainfallFactors">Run an analysis to see forecast intensity and soil saturation factors.</p>
                         </article>
@@ -263,17 +305,14 @@
                         </div>
                         <div><p class="eyebrow">SECTION 4</p><h2 id="map-title">Farm location map</h2></div>
                     </div>
-                    <span class="coming-soon-pill">Drag the pin to refine location</span>
+                    <span class="coming-soon-pill">Selected location</span>
                 </div>
                 <div id="farmMap" class="farm-map" aria-label="Interactive farm location map"></div>
                 <div class="farm-map-controls">
                     <div class="farm-map-location" aria-live="polite">
                         <strong id="farmMapLocation">No farm location selected</strong>
-                        <span id="farmMapCoordinates">Latitude — · Longitude —</span>
                         <p id="farmMapFeedback" role="status">Search for a location to place the farm marker.</p>
-                        <p id="confirmedFarmLocation" class="confirmed-farm-location" hidden></p>
                     </div>
-                    <button id="confirmFarmLocation" class="button button-primary confirm-location-button" type="button" disabled>Confirm Farm Location</button>
                 </div>
                 <p class="map-attribution-note">Map tiles © OpenStreetMap contributors. Follow the <a href="https://operations.osmfoundation.org/policies/tiles/" target="_blank" rel="noopener noreferrer">tile usage policy</a>; bulk downloading is not permitted.</p>
             </div>

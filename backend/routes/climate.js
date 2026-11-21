@@ -1,6 +1,17 @@
 const express = require("express");
 
 const router = express.Router();
+const weatherCache = new Map();
+const weatherInFlight = new Map();
+const WEATHER_CACHE_TTL_MS = 10 * 60 * 1000;
+
+function roundedCoordinate(value) {
+    return Math.round(value * 100) / 100;
+}
+
+function weatherCacheKey(latitude, longitude) {
+    return `${roundedCoordinate(latitude)},${roundedCoordinate(longitude)}`;
+}
 
 const WEATHER_DESCRIPTIONS = {
     0: "Clear sky",
@@ -95,6 +106,7 @@ router.get("/geocode", async (req, res) => {
     }
 });
 
+
 router.get("/weather", async (req, res) => {
     const latitudeValue = typeof req.query.latitude === "string" ? req.query.latitude.trim() : "";
     const longitudeValue = typeof req.query.longitude === "string" ? req.query.longitude.trim() : "";
@@ -116,7 +128,30 @@ router.get("/weather", async (req, res) => {
         });
     }
 
-    try {
+    const cacheKey = weatherCacheKey(latitude, longitude);
+    const cached = weatherCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+        res.set("X-Weather-Cache", "HIT");
+        return res.json({ ...cached.data, cached: true });
+    }
+    if (cached) weatherCache.delete(cacheKey);
+
+    if (weatherInFlight.has(cacheKey)) {
+        try {
+            const data = await weatherInFlight.get(cacheKey);
+            return res.json({ ...data, cached: true });
+        } catch (error) {
+            console.error("Deduplicated weather request failed:", error);
+            return res.status(error.statusCode || 502).json({
+                success: false,
+                error: error.statusCode === 429
+                    ? "Weather provider is busy. Please wait a moment and try again."
+                    : "Weather data is temporarily unavailable. Please try again."
+            });
+        }
+    }
+
+    const requestPromise = (async () => {
         const query = new URLSearchParams({
             latitude: String(latitude),
             longitude: String(longitude),
@@ -125,9 +160,15 @@ router.get("/weather", async (req, res) => {
             forecast_days: "7",
             timezone: "auto"
         });
-        const data = await fetchOpenMeteo(
-            `https://api.open-meteo.com/v1/forecast?${query.toString()}`
-        );
+        const url = `https://api.open-meteo.com/v1/forecast?${query.toString()}`;
+        const response = await fetch(url);
+        if (!response.ok) {
+            const error = new Error(`Open-Meteo returned HTTP ${response.status}`);
+            error.statusCode = response.status;
+            error.retryAfter = response.headers.get("retry-after");
+            throw error;
+        }
+        const data = await response.json();
 
         if (
             !data.current ||
@@ -152,7 +193,7 @@ router.get("/weather", async (req, res) => {
             precipitationMm: data.daily.precipitation_sum[index]
         }));
 
-        return res.json({
+        const result = {
             success: true,
             current: {
                 temperatureC: current.temperature_2m,
@@ -162,13 +203,27 @@ router.get("/weather", async (req, res) => {
                 weatherDescription: describeWeather(current.weather_code)
             },
             forecast
-        });
+        };
+        weatherCache.set(cacheKey, { data: result, expiresAt: Date.now() + WEATHER_CACHE_TTL_MS });
+        return result;
+    })();
+
+    weatherInFlight.set(cacheKey, requestPromise);
+    try {
+        const data = await requestPromise;
+        return res.json(data);
     } catch (error) {
         console.error("Open-Meteo weather request failed:", error);
-        return res.status(502).json({
+        const status = error.statusCode === 429 ? 429 : 502;
+        if (error.retryAfter) res.set("Retry-After", error.retryAfter);
+        return res.status(status).json({
             success: false,
-            error: "Weather data is temporarily unavailable. Please try again."
+            error: status === 429
+                ? "Weather provider is busy. Please wait a moment and try again."
+                : "Weather data is temporarily unavailable. Please try again."
         });
+    } finally {
+        weatherInFlight.delete(cacheKey);
     }
 });
 
